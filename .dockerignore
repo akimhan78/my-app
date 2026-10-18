@@ -1,0 +1,16 @@
+.git/
+.gitignore
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+.dev.vars
+.wrangler/
+.streamlit/secrets.toml
+2021/
+2022/
+2023/
+2024/
+2025/
+

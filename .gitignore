@@ -1,0 +1,18 @@
+# 원본 전월세 파일은 큰 편이므로 Git에는 압축된 배포 사본만 포함합니다.
+/2021/
+/2022/
+/2023/
+/2024/
+/2025/
+
+# Python 환경, 캐시 및 비밀 설정은 저장소에 올리지 않습니다.
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+.wrangler/
+.dev.vars
+
