@@ -1,0 +1,7 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cache-Control: public, max-age=300
+
+/data/dashboard.json.gz
+  Cache-Control: public, max-age=3600

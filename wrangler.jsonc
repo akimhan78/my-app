@@ -1,33 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "seoul-jeonse-dashboard",
-  "main": "src/index.js",
   "compatibility_date": "2026-10-19",
-  "workers_dev": true,
-  "containers": [
-    {
-      "class_name": "StreamlitContainer",
-      "image": "./Dockerfile",
-      "max_instances": 1,
-      "instance_type": "standard-3"
-    }
-  ],
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "STREAMLIT_CONTAINER",
-        "class_name": "StreamlitContainer"
-      }
-    ]
-  },
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["StreamlitContainer"]
-    }
-  ],
-  "observability": {
-    "enabled": true
-  }
+  "pages_build_output_dir": "./public"
 }
 

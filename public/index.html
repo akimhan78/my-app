@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7fb" />
+    <meta name="description" content="서울시 자치구와 법정동의 최근 5년 전세 가격을 살펴보는 인터랙티브 대시보드" />
+    <title>서울 전세 인사이트</title>
+    <link rel="preconnect" href="https://cdn.plot.ly" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script defer src="/dashboard.js"></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="brand-row"><span class="brand-mark">S</span><span>SEOUL · HOUSING DATA</span></div>
+        <div class="hero-copy">
+          <p class="eyebrow">서울시 전세시장 대시보드</p>
+          <h1>우리 동네 전세 흐름,<br /><span>숫자로 살펴보기</span></h1>
+          <p class="hero-description">자치구와 법정동별 전세 가격 추이부터 지역 비교와 유사 지역 추천까지 한눈에 확인하세요.</p>
+        </div>
+        <div class="hero-meta"><span class="live-dot"></span><span id="date-range">분석 기간을 불러오는 중</span></div>
+      </header>
+
+      <main>
+        <div id="loading" class="loading-card"><span class="spinner"></span><div><strong>대시보드를 준비하고 있어요</strong><p>최근 5년 월별 분석 자료를 불러오는 중입니다.</p></div></div>
+        <div id="app-error" class="error-card hidden" role="alert"></div>
+
+        <div id="dashboard" class="hidden">
+          <nav class="tabs" role="tablist" aria-label="분석 탭">
+            <button class="tab active" role="tab" aria-selected="true" data-tab="trend"><span>01</span> 지역별 전세 추이</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="compare"><span>02</span> 두 지역 비교</button>
+            <button class="tab" role="tab" aria-selected="false" data-tab="similar"><span>03</span> 유사 지역 찾기</button>
+          </nav>
+
+          <section class="tab-panel active" id="panel-trend" role="tabpanel">
+            <div class="section-heading"><div><p class="eyebrow">PRICE TREND</p><h2>지역별 전세 추이</h2><p>지도나 목록에서 자치구와 법정동을 선택해 서울 전체와 비교해 보세요.</p></div></div>
+            <div class="trend-top-grid">
+              <article class="card map-card"><div class="card-heading"><div><h3>자치구별 최근 가격</h3><p>최근 1년 ㎡당 전세가격 중앙값 · 단위 만원/㎡</p></div><span class="card-kicker">SEOUL MAP</span></div><div id="district-map" class="map-chart"></div></article>
+              <article class="card selection-card"><div class="card-heading"><div><h3>분석 지역 선택</h3><p>선택한 자치구 안의 법정동만 표시합니다.</p></div></div><label for="trend-district">자치구</label><select id="trend-district"></select><label for="trend-dong">법정동</label><select id="trend-dong"></select><div class="selection-note"><span class="note-icon">i</span><span>지도에서 자치구를 클릭해도 선택할 수 있어요.</span></div><div id="peak-note" class="peak-note"></div></article>
+            </div>
+            <div class="metric-grid" id="trend-metrics"></div>
+            <article class="card chart-card"><div class="card-heading"><div><h3 id="trend-chart-title">월별 가격 추이</h3><p>동 단위는 월 거래 5건 미만인 경우 그래프에서 제외합니다.</p></div><span class="card-kicker">MONTHLY MEDIAN</span></div><div id="trend-chart" class="line-chart"></div></article>
+          </section>
+
+          <section class="tab-panel" id="panel-compare" role="tabpanel" hidden>
+            <div class="section-heading"><div><p class="eyebrow">SIDE BY SIDE</p><h2>두 지역 비교</h2><p>두 자치구의 가격 흐름과 주요 지표를 같은 기준으로 비교합니다.</p></div></div>
+            <div class="card compare-controls"><div class="select-field"><label for="compare-a">자치구 A</label><select id="compare-a"></select></div><div class="swap-mark">↔</div><div class="select-field"><label for="compare-b">자치구 B</label><select id="compare-b"></select></div></div>
+            <div class="metric-grid two-metric-grid" id="compare-metrics"></div>
+            <article class="card chart-card"><div class="card-heading"><div><h3>최근 5년 가격 추이</h3><p>월별 ㎡당 전세가격 중앙값</p></div><span class="card-kicker">DISTRICT COMPARISON</span></div><div id="compare-line" class="line-chart"></div></article>
+            <div class="subsection-heading"><div><p class="eyebrow">KEY INDICATORS</p><h3>주요 통계 비교</h3></div></div>
+            <div class="comparison-chart-grid" id="compare-bars"></div>
+            <article class="card table-card"><div class="card-heading"><div><h3>통계 요약</h3><p>분석 기간의 월별 집계에서 계산한 값입니다.</p></div></div><div class="table-wrap"><table id="compare-table"></table></div></article>
+          </section>
+
+          <section class="tab-panel" id="panel-similar" role="tabpanel" hidden>
+            <div class="section-heading"><div><p class="eyebrow">SIMILARITY SEARCH</p><h2>유사 지역 찾기</h2><p>세 가지 통계를 표준화한 뒤 유클리드 거리로 가까운 자치구를 찾습니다.</p></div></div>
+            <div class="card compare-controls similar-controls"><div class="select-field"><label for="similar-district">기준 자치구</label><select id="similar-district"></select></div><div class="method-note"><strong>유사도 기준</strong><span>최근 1년 가격 · 5년 변화율 · 월별 변동성</span></div></div>
+            <div id="similar-reference-metrics" class="metric-grid"></div>
+            <div class="subsection-heading"><div><p class="eyebrow">TOP 3 MATCHES</p><h3>가장 비슷한 자치구</h3></div></div>
+            <article class="card table-card"><div class="table-wrap"><table id="similar-table"></table></div></article>
+            <article class="card chart-card"><div class="card-heading"><div><h3>추천 지역 통계 비교</h3><p>기준 자치구와 추천 자치구의 원래 단위 값을 비교합니다.</p></div><span class="card-kicker">FEATURE PROFILE</span></div><div class="table-wrap"><table id="similar-feature-table"></table></div></article>
+            <article class="card chart-card"><div class="card-heading"><div><h3>가격 흐름 함께 보기</h3><p>기준 자치구와 추천 TOP 3의 월별 ㎡당 전세가격 중앙값</p></div><span class="card-kicker">5 YEAR TREND</span></div><div id="similar-line" class="line-chart"></div></article>
+          </section>
+        </div>
+      </main>
+      <footer><span>서울 전세 인사이트</span><span>가격 지표: ㎡당 전세가격 중앙값 · 보증금 단위: 만원</span></footer>
+    </div>
+  </body>
+</html>

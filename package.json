@@ -3,10 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "deploy": "wrangler deploy"
-  },
-  "dependencies": {
-    "@cloudflare/containers": "^0.3.7"
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public --project-name seoul-jeonse-dashboard --branch main"
   },
   "devDependencies": {
     "wrangler": "^4.136.0"

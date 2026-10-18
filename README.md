@@ -1,38 +1,62 @@
-# 서울 전세가격 분석 대시보드
+# 서울 전세 인사이트
 
-서울시 전세 계약 데이터를 이용해 최근 5년 가격 흐름을 살펴보는 Streamlit 프로젝트입니다.
+서울시 전세 계약을 자치구와 법정동별로 살펴보는 Cloudflare Pages 정적 대시보드입니다. 앱은 별도 서버 없이 브라우저에서 실행되며, Plotly로 지도와 그래프를 표시합니다.
 
-## 기능
+## 포함 기능
 
-- 자치구 및 법정동의 월별 ㎡당 전세가격 중앙값 추이와 서울 전체 비교
-- 두 자치구의 가격 흐름과 요약 통계 비교
-- 최근 가격 수준, 5년 변화율, 월별 변동성을 이용한 유사 자치구 추천
-- 최근 1년 ㎡당 전세가격 중앙값 Choropleth 지도
+- 자치구 지도와 자치구·법정동별 월간 가격 추이
+- 두 자치구의 가격 추이와 주요 통계 비교
+- 세 가지 통계 특성을 표준화한 유클리드 거리 기반 유사 자치구 TOP 3
+- 데이터의 가장 최근 계약일을 기준으로 한 최근 5년 분석
 
-최근 5년의 시작점은 오늘 날짜가 아니라 데이터의 가장 최근 계약일을 기준으로 정합니다.
+대표 가격 지표는 `㎡당 전세가격 중앙값`입니다. 법정동의 월 거래가 5건보다 적으면 그 달의 가격을 추이 그래프와 동 요약 지표에서 제외합니다. 실제 거래 건수와 전체 거래 수에는 소량 거래 월도 포함합니다.
 
-## 로컬 실행
+## 프로젝트 파일
 
-Python 3.12 이상을 권장합니다.
+- `public/`: Pages가 게시하는 HTML, CSS, JavaScript, 압축 집계 데이터
+- `scripts/build_static_data.py`: 연도별 원본 자료에서 정적 대시보드용 월별 자료를 다시 생성
+- `deployment_data/`: 정적 집계 자료를 만들기 위한 원본 압축 CSV/TXT 및 자치구 GeoJSON
+- `analysis.py`: 기존 pandas/Plotly 분석 코드 참고용
+
+정적 사이트에는 원본 거래 행을 게시하지 않습니다. 대시보드는 자치구·법정동별 월간 중앙값과 건수로 집계된 자료만 내려받습니다.
+
+## 로컬에서 보기
+
+`public/index.html`은 정적 파일이므로 로컬 HTTP 서버로 열어야 압축 자료를 읽을 수 있습니다.
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-streamlit run app.py
+python -m http.server 8000 --directory public
 ```
 
-`deployment_data/`에는 GitHub와 컨테이너 배포용 압축 데이터 및 서울 구 경계 GeoJSON이 있습니다. 원본 파일을 사용할 경우 앱 폴더 아래 연도별 폴더에 CSV 또는 TXT 파일을 둘 수 있습니다.
+브라우저에서 `http://localhost:8000`을 엽니다. Plotly.js는 CDN에서 가져오므로 그래프를 보려면 인터넷 연결이 필요합니다.
 
-## GitHub 및 Cloudflare 배포
+## 집계 자료 다시 만들기
 
-이 저장소는 Cloudflare Workers Builds에서 `npm install` 후 `npx wrangler deploy`를 실행하도록 구성했습니다. Cloudflare Dashboard에서 이 GitHub 저장소를 Worker Builds에 연결하고 production branch를 `main`으로 지정하세요.
+프로젝트 루트에서 pandas가 설치된 Python 환경을 사용합니다.
 
-Cloudflare Containers는 실행 중인 Streamlit 서버를 제공하므로 정적 Pages 배포와 다릅니다. Cloudflare 계정에서 Workers Paid 플랜 및 Containers 사용이 가능해야 합니다. 첫 배포 후 컨테이너가 준비되기까지 몇 분이 걸릴 수 있습니다.
+```powershell
+pip install -r requirements.txt
+python scripts/build_static_data.py
+```
 
-## 데이터 및 비밀 정보
+스크립트는 `deployment_data/*.gz`를 읽어 `public/data/dashboard.json.gz`를 다시 만듭니다. 새 데이터로 갱신한 경우 이 생성 파일을 Git에 반영해 Pages에 배포합니다.
 
-- 배포용 거래 데이터는 `.gz` 파일로 Git에 포함됩니다. 저장소 공개 범위를 결정할 때 데이터 배포 권한과 과제 요구사항을 먼저 확인하세요.
-- 원본 연도별 CSV/TXT, `.env`, API key, Streamlit secrets, Python 환경은 Git에서 제외됩니다.
-- 경계 데이터는 서울 25개 구만 포함한 EPSG:4326 GeoJSON으로 축소해 포함합니다.
+## Cloudflare Pages 배포
 
+저장소를 GitHub에 push한 다음 Cloudflare Dashboard에서 **Workers & Pages → Create application → Pages → Connect to Git**으로 저장소를 연결합니다.
+
+- Production branch: `main`
+- Build command: 비워 둠
+- Build output directory: `public`
+- Root directory: 저장소 루트
+
+`wrangler.jsonc`에는 Pages 출력 폴더가 설정되어 있습니다. Cloudflare 계정에 Wrangler 로그인이 되어 있다면 명령줄 배포도 가능합니다.
+
+```powershell
+npm install
+npm run deploy
+```
+
+## 해석 시 참고
+
+최근 1년 자치구 가격 특성은 최근 12개월 계약 원자료의 ㎡당 전세가격 중앙값입니다. 월별 추이와 변화율·변동성은 월별 중앙값을 사용합니다. 유사도 계산은 최근 1년 중앙값, 최근 5년 변화율, 월별 변동성을 각각 z-score로 표준화한 후 동일한 비중으로 유클리드 거리를 계산합니다.
